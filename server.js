@@ -3,6 +3,8 @@ const app = express();
 const dbconfig = require('./db');
 const roomsRoute = require("./routes/roomsRoute");
 
+app.use(express.json());
+
 app.use('/api/rooms',roomsRoute);
 const port = process.env.port || 5000;
 app.listen(port, ()=> 
