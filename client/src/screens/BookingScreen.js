@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useParams } from "react-router-dom";
+import Loader from '../components/Loader';
+import Error from '../components/Error';
 
 const BookingScreen = () => {
   const { roomid } = useParams();  // ✅ get roomid from URL
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState();
   const [room, setRoom] = useState();
 
   useEffect(() => {
@@ -27,10 +29,8 @@ const BookingScreen = () => {
   return (
     <div className="m-5">
   {loading ? (
-    <h1>Loading....</h1>
-  ) : error ? (
-    <h1>Error....</h1>
-  ) : (
+   <Loader/>
+  ) : room ? (
     <div className="row justify-content-center mt-5 bs">
 
       {/* Left: Room Info */}
@@ -74,7 +74,7 @@ const BookingScreen = () => {
 
       </div>
     </div>
-  )}
+  ) : <Error/>}
 </div>
 
   )
