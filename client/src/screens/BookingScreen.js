@@ -1,21 +1,25 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useParams } from "react-router-dom";
-import Loader from '../components/Loader';
-import Error from '../components/Error';
+import Loader from "../components/Loader";
+import Error from "../components/Error";
 
 const BookingScreen = () => {
-  const { roomid } = useParams();  // ✅ get roomid from URL
+  // 👇 get all params from the route
+  const { roomid, fromdate, todate } = useParams();
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
+  const [error, setError] = useState(false);
   const [room, setRoom] = useState();
+
+ 
 
   useEffect(() => {
     const fetchRoom = async () => {
       try {
         setLoading(true);
-        const response = await axios.post("/api/rooms/getroombyid", { roomid }); // ✅ correct
-        setRoom(response.data);   // ✅ response.data is actual room object
+        const response = await axios.post("/api/rooms/getroombyid", { roomid });
+        setRoom(response.data);
         setLoading(false);
       } catch (err) {
         setError(true);
@@ -27,57 +31,63 @@ const BookingScreen = () => {
   }, [roomid]);
 
   return (
-    <div className="m-5">
-  {loading ? (
-   <Loader/>
-  ) : room ? (
-    <div className="row justify-content-center mt-5 bs">
+    <div className="mx-5">
+      {loading ? (
+        <Loader />
+      ) : room ? (
+        <div className="container-fluid">
+          <div className="row justify-content-center mt-5 bs">
+            <div className="col-md-6">
+              <h4>{room.name}</h4>
+              <img
+                className="bigimg"
+                alt="booking"
+                src={room.imageurls[0]}
+                style={{
+                  height: "360px",
+                  width: "auto",
+                  border: "1px solid transparent",
+                  borderRadius: "5px",
+                }}
+              />
+            </div>
 
-      {/* Left: Room Info */}
-      <div className="col-md-5">
-        <h1 className="mb-3">{room.name}</h1>
-        <img
-          src={room.imageurls[0]}
-          className="bigimg img-fluid rounded"
-          style={{ maxHeight: "350px", objectFit: "cover" }}
-          alt={room.name}
-        />
-      </div>
+            {/* Right: Booking Details */}
+            <div className="col-md-6">
+              <div style={{ textAlign: "right" }}>
+                <h4>Booking Details</h4>
+                <hr />
+                <b>
+                  <p>Name: </p>
+                  <p>From Date: {fromdate}</p>
+                  <p>To Date: {todate}</p>
+                  <p>Max Count : {room.maxcount}</p>
+                </b>
+              </div>
 
-      {/* Right: Booking Details */}
-      <div className="col-md-6">
+              <div style={{ textAlign: "right" }}>
+                <h4>Amount</h4>
+                <hr />
+                <b>
+                  <p>Total days: </p>
+                  <p>Rent Per Day: {room.rentperday}</p>
+                  <p>Total Amount </p>
+                </b>
+              </div>
 
-        <div className="mb-4 p-3 border rounded shadow-sm">
-          <h2 className="text-end mb-3">Booking Details</h2>
-          <hr />
-          <b>
-            <p className="text-end">Name: </p>
-            <p className="text-end">From Date: </p>
-            <p className="text-end">To Date: </p>
-            <p className="text-end">Max Count : {room.maxcount}</p>
-          </b>
+              <div>
+                <button className="btn btn-dark" style={{ float: "right" }}>
+                  Pay Now
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="p-3 border rounded shadow-sm mb-3">
-          <h2 className="text-end mb-3">Amount</h2>
-          <hr />
-          <b>
-            <p className="text-end">Total days: </p>
-            <p className="text-end">Rent Per Day: {room.rentperday}</p>
-            <p className="text-end">Total Amount </p>
-          </b>
-        </div>
-
-        <div className="text-end">
-          <button className="btn btn-primary px-4">Pay Now</button>
-        </div>
-
-      </div>
+      ) : (
+        <Error />
+      )}
     </div>
-  ) : <Error/>}
-</div>
-
-  )
-}
+  );
+};
 
 export default BookingScreen;
