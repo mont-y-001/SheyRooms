@@ -19,4 +19,5 @@ A full-stack **room booking web application** built with **MERN stack** (MongoDB
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/SheyRooms.git
+   git clone https://github.com/mont-y-001/SheyRooms.git
+
