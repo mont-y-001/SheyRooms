@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import {Modal,Button,Carousel} from 'react-bootstrap'
 import { NavLink } from "react-router-dom";
 
-const Rooms = ({ room }) => {
+const Rooms = ({ room,fromdate,todate }) => {
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -18,9 +18,9 @@ const Rooms = ({ room }) => {
                 <p>Type: {room.type}</p>
 
 
-                <div style={{ float: "right" }}>
-                  <NavLink to={`/book/${room._id}`}>
-                    <button className='btn btn-primary'>Book Now</button>
+                <div  style={{ float: "right" } }>
+                  <NavLink to={`/book/${room._id}/${fromdate}/${todate}`}>
+                    <button className='btn btn-primary me-2'>Book Now</button>
                   </NavLink>
                     <button className='btn btn-primary' onClick={handleShow} >View Details</button>
                 </div>

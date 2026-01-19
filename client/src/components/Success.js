@@ -1,10 +1,10 @@
 import React from 'react'
 
-const Success = () => {
+const Success = (message) => {
   return (
     <div>
-      <div class="alert alert-success" role="alert">
-  A simple success alert—check it out!
+      <div className="alert alert-success" role="alert">
+  {message }
 </div>
     </div>
   )
