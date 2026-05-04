@@ -1,6 +1,6 @@
 import './App.css';
 import Navbar from './components/Navbar';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Homescreen from './screens/Homescreen';
 import BookingScreen from './screens/BookingScreen';
 import Registerscreen from './screens/Registerscreen';
@@ -12,8 +12,9 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
+          <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Homescreen />} />
-        <Route path="/book/:roomid/:fromdate/:todate" element={<BookingScreen />} />
+          <Route path="/book/:roomid/:fromdate/:todate" element={<BookingScreen />} />
           <Route path="/register" element={<Registerscreen />} />
           <Route path="/login" element={<Loginscreen />} />
         </Routes>

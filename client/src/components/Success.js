@@ -1,11 +1,11 @@
 import React from 'react'
 
-const Success = (message) => {
+const Success = ({ message }) => {
   return (
     <div>
       <div className="alert alert-success" role="alert">
-  {message }
-</div>
+        {message}
+      </div>
     </div>
   )
 }

@@ -1,13 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { NavDropdown } from 'react-bootstrap'
+import { supabase } from '../supabaseClient'
 export default function Navbar() {
 
   // Getting User From Local Storage
   const user = JSON.parse(localStorage.getItem("currentUser"))
 
   // Removing User From Local Storage
-  const logOut = () => {
+  const logOut = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("currentUser");
     window.location.href = "/login"
   }
@@ -27,10 +28,10 @@ export default function Navbar() {
               {user ? (
                 <>
                   <div className="dropdown">
-                    <button className="btn btn-secondary dropdown-toggle" type='button' id='dropdownMenuButton' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{user.name}</button>
+                    <button className="btn btn-secondary dropdown-toggle" type='button' id='dropdownMenuButton' data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{user.name}</button>
                     <div className="dropdown-menu" aria-labelledby='dropdownMenuButton'>
-                      <a href="#" className="dropdown-item">Booking</a>
-                      <a href="#" className="dropdown-item" onClick={logOut}>Logout</a>
+                      <Link to="/profile" className="dropdown-item">Profile</Link>
+                      <button className="dropdown-item" onClick={logOut}>Logout</button>
                     </div>
                   </div>
                 </>) : (

@@ -9,7 +9,7 @@ const Rooms = ({ room,fromdate,todate }) => {
     return (
         <div className="row bs">
             <div className="col-md-4">
-                <img src={room.imageurls[0]} className='smallimg' />
+                <img src={room.imageurls[0]} className='smallimg' alt={room.name} />
             </div>
             <div className='col-md-7'>
                 <h1>{room.name}</h1>
@@ -19,7 +19,7 @@ const Rooms = ({ room,fromdate,todate }) => {
 
 
                 <div  style={{ float: "right" } }>
-                  <NavLink to={`/book/${room._id}/${fromdate}/${todate}`}>
+                  <NavLink to={`/book/${room.id}/${fromdate}/${todate}`}>
                     <button className='btn btn-primary me-2'>Book Now</button>
                   </NavLink>
                     <button className='btn btn-primary' onClick={handleShow} >View Details</button>
@@ -34,11 +34,12 @@ const Rooms = ({ room,fromdate,todate }) => {
         <Modal.Body>
 
                 <Carousel>
-      {room.imageurls.map(url =>{
-        return <Carousel.Item>
+      {room.imageurls.map((url, index) =>{
+        return <Carousel.Item key={index}>
             <img 
             className='d-block w-100 bigimg' 
             src={url}
+            alt={`${room.name} - ${index + 1}`}
          />
         </Carousel.Item>
       })}

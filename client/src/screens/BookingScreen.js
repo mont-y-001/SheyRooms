@@ -1,34 +1,48 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
+import moment from "moment";
+import { supabase } from "../supabaseClient";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
 
 const BookingScreen = () => {
-  // 👇 get all params from the route
   const { roomid, fromdate, todate } = useParams();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [room, setRoom] = useState();
+  const [totalAmount, setTotalAmount] = useState();
+  const [totalDays, setTotalDays] = useState();
 
- 
+  const user = JSON.parse(localStorage.getItem("currentUser"));
 
   useEffect(() => {
     const fetchRoom = async () => {
       try {
         setLoading(true);
-        const response = await axios.post("/api/rooms/getroombyid", { roomid });
-        setRoom(response.data);
+        const { data, error } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('id', roomid)
+          .single();
+        
+        if (error) throw error;
+        
+        setRoom(data);
+        
+        const totalDaysCount = moment.duration(moment(todate, 'DD-MM-YYYY').diff(moment(fromdate, 'DD-MM-YYYY'))).asDays() + 1;
+        setTotalDays(totalDaysCount);
+        setTotalAmount(totalDaysCount * data.rentperday);
+        
         setLoading(false);
       } catch (err) {
-        setError(true);
+        setError(err.message || "Error fetching room details");
         console.error("Error fetching room:", err);
         setLoading(false);
       }
     };
     fetchRoom();
-  }, [roomid]);
+  }, [roomid, fromdate, todate]);
 
   return (
     <div className="mx-5">
@@ -41,7 +55,7 @@ const BookingScreen = () => {
               <h4>{room.name}</h4>
               <img
                 className="bigimg"
-                alt="booking"
+                alt={room.name}
                 src={room.imageurls[0]}
                 style={{
                   height: "360px",
@@ -52,13 +66,12 @@ const BookingScreen = () => {
               />
             </div>
 
-            {/* Right: Booking Details */}
             <div className="col-md-6">
               <div style={{ textAlign: "right" }}>
                 <h4>Booking Details</h4>
                 <hr />
                 <b>
-                  <p>Name: </p>
+                  <p>Name: {user ? user.name : 'Guest'}</p>
                   <p>From Date: {fromdate}</p>
                   <p>To Date: {todate}</p>
                   <p>Max Count : {room.maxcount}</p>
@@ -69,9 +82,9 @@ const BookingScreen = () => {
                 <h4>Amount</h4>
                 <hr />
                 <b>
-                  <p>Total days: </p>
+                  <p>Total days: {totalDays}</p>
                   <p>Rent Per Day: {room.rentperday}</p>
-                  <p>Total Amount </p>
+                  <p>Total Amount: {totalAmount}</p>
                 </b>
               </div>
 
@@ -84,7 +97,7 @@ const BookingScreen = () => {
           </div>
         </div>
       ) : (
-        <Error />
+        <Error message={error} />
       )}
     </div>
   );

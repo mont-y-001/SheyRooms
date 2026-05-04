@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import HashLoader from "react-spinners/HashLoader";
 
 const Loader = () => {
-  let [loading, setLoading] = useState(true);
+  const loading = true;
 
   return (
     <div 
