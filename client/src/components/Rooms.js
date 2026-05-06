@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import {Modal,Button,Carousel} from 'react-bootstrap'
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Rooms = ({ room,fromdate,todate }) => {
   const [show, setShow] = useState(false);
@@ -18,11 +18,15 @@ const Rooms = ({ room,fromdate,todate }) => {
                 <p>Type: {room.type}</p>
 
 
-                <div  style={{ float: "right" } }>
-                  <NavLink to={`/book/${room.id}/${fromdate}/${todate}`}>
-                    <button className='btn btn-primary me-2'>Book Now</button>
-                  </NavLink>
-                    <button className='btn btn-primary' onClick={handleShow} >View Details</button>
+                <div className='d-flex justify-content-end mt-2'>
+                  <button className='btn btn-outline-dark me-2' onClick={handleShow}>
+                    View Details
+                  </button>
+                  {fromdate && todate && (
+                    <Link className='btn btn-dark' to={`/book/${room.id}/${fromdate}/${todate}`}>
+                      Book Now
+                    </Link>
+                  )}
                 </div>
             </div>
 
