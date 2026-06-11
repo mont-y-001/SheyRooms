@@ -49,29 +49,39 @@ function Loginscreen() {
   }
 
   return (
-    <div>
+    <div className="page-screen">
       {loading && <Loader />}
-      {error && <Error message={error} />}
-
-      <div className='row justify-content-center mt-5'>
-        <div className='col-md-5'>
-          <div className='bs border'>
-            <h1 className='text-center'>Login</h1>
-
-            <input type='email' className='form-control'
-              value={email} onChange={(e) => setemail(e.target.value)}
-              placeholder='Email' />
-
-            <input type='password' className='form-control'
-              value={password} onChange={(e) => setpassword(e.target.value)}
-              placeholder='Password' />
-
-            <button className='btn btn-dark mt-3' onClick={login}>
-              Login
-            </button>
+      <section className="page-hero text-center">
+        <div className="container">
+          <h1 className="display-5 fw-bold mb-2">Welcome <span className="accent">Back</span></h1>
+          <p className="lead">Sign in to manage your bookings and listings</p>
+        </div>
+      </section>
+      <section className="page-content">
+        <div className="container">
+          {error && <Error message={error} />}
+          <div className="row justify-content-center">
+            <div className="col-md-5">
+              <div className="glass-card-static">
+                <h3 className="text-center mb-4">Login</h3>
+                <div className="mb-3">
+                  <input type="email" className="form-control"
+                    value={email} onChange={(e) => setemail(e.target.value)}
+                    placeholder="Email" />
+                </div>
+                <div className="mb-3">
+                  <input type="password" className="form-control"
+                    value={password} onChange={(e) => setpassword(e.target.value)}
+                    placeholder="Password" />
+                </div>
+                <button className="btn btn-dark w-100" onClick={login}>
+                  <i className="fa fa-sign-in me-2"></i> Login
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

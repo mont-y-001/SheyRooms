@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { supabase } from '../supabaseClient';
 import Loader from '../components/Loader';
 import Error from '../components/Error';
-import { Modal, Input, Row, Col } from 'antd';
+import { Modal, Input, Row, Col, message } from 'antd';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
@@ -27,17 +27,29 @@ const BookingScreen = React.memo(function BookingScreen() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
-  const user = React.useMemo(() => {
+  // Read user directly from localStorage on every render
+  const userRef = useRef(null);
+  const user = (() => {
+    if (userRef.current) return userRef.current;
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      const u = JSON.parse(localStorage.getItem("user"));
+      userRef.current = u;
+      return u;
     } catch {
       return null;
     }
-  }, []);
+  })();
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
+      return;
+    }
+
+    // Validate dates
+    if (!fromdate || !todate) {
+      setError("Invalid booking dates. Please go back and select dates.");
+      setLoading(false);
       return;
     }
 
@@ -56,17 +68,25 @@ const BookingScreen = React.memo(function BookingScreen() {
 
         setRoom(data);
 
-        const days =
-          moment(todate, 'DD-MM-YYYY').diff(
-            moment(fromdate, 'DD-MM-YYYY'),
-            'days'
-          ) + 1;
+        const start = moment(fromdate, 'DD-MM-YYYY');
+        const end = moment(todate, 'DD-MM-YYYY');
+
+        if (!start.isValid() || !end.isValid()) {
+          throw new Error("Invalid date format");
+        }
+
+        const days = end.diff(start, 'days') + 1;
+
+        if (days <= 0) {
+          throw new Error("To date must be after from date");
+        }
 
         setTotalDays(days);
         setTotalAmount(days * data.rentperday);
 
       } catch (err) {
         setError(err.message);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -84,6 +104,11 @@ const BookingScreen = React.memo(function BookingScreen() {
   }, []);
 
   const bookRoom = useCallback(async () => {
+    if (!user || !user.id) {
+      setError("User not authenticated. Please login again.");
+      return;
+    }
+
     const bookingDetails = {
       room_id: roomid,
       user_id: user.id,
@@ -91,11 +116,13 @@ const BookingScreen = React.memo(function BookingScreen() {
       todate,
       totalamount: totalAmount,
       totaldays: totalDays,
+      status: 'booked'
     };
 
     try {
       setBookingLoading(true);
       setIsPaymentModalVisible(false);
+      setError(null);
 
       const { error } = await supabase
         .from('bookings')
@@ -105,31 +132,46 @@ const BookingScreen = React.memo(function BookingScreen() {
 
       setBookingSuccess(true);
 
-      Modal.success({
-        title: 'Booking Confirmed!',
+      // Show success message
+      message.success('🎉 Booking Confirmed!', 2);
+
+      // Show confirmation modal
+      Modal.confirm({
+        title: '✅ Booking Confirmed!',
         content: (
           <div>
             <p>Your room at <strong>{room?.name}</strong> has been booked successfully.</p>
             <p>Dates: <strong>{fromdate}</strong> to <strong>{todate}</strong></p>
-            <p>We've sent a confirmation email to your registered address.</p>
+            <p>Total Paid: <strong>₹{totalAmount}</strong></p>
+            <p>A confirmation has been sent to your registered email.</p>
           </div>
         ),
         onOk() {
           navigate('/home');
         },
+        onCancel() {
+          navigate('/home');
+        },
         okText: 'Back to Home',
+        cancelText: 'Stay Here',
         centered: true,
+        okButtonProps: { className: "btn-dark" },
       });
 
     } catch (err) {
       console.error(err);
-      setError("Booking failed. Please try again.");
+      // If CORS error, show helpful message
+      if (err.message === 'Failed to fetch' || err.code === 'PGRST301') {
+        setError("⚠️ Database connection issue. Please add http://localhost:3000 to Supabase > Authentication > Settings > Allowed Origins, then refresh.");
+      } else {
+        setError(`Booking failed: ${err.message}`);
+      }
     } finally {
       setBookingLoading(false);
     }
   }, [roomid, fromdate, todate, totalAmount, totalDays, user, room?.name, navigate]);
 
-  const isPaymentReady = cardName && cardNumber && expiry && cvv;
+  const isPaymentReady = cardName.trim() && cardNumber.trim() && expiry.trim() && cvv.trim();
 
   return (
     <div className="container py-5">
@@ -160,7 +202,7 @@ const BookingScreen = React.memo(function BookingScreen() {
                   <div className="mb-5">
                     <h4 className="text-dark border-bottom pb-3 mb-4">Booking Details</h4>
                     <div className="details-list">
-                      <p className="d-flex justify-content-between"><strong>Guest:</strong> <span>{user?.name}</span></p>
+                      <p className="d-flex justify-content-between"><strong>Guest:</strong> <span>{user?.name || 'Guest'}</span></p>
                       <p className="d-flex justify-content-between"><strong>From Date:</strong> <span>{fromdate}</span></p>
                       <p className="d-flex justify-content-between"><strong>To Date:</strong> <span>{todate}</span></p>
                       <p className="d-flex justify-content-between"><strong>Capacity:</strong> <span>{room.maxcount} Persons</span></p>
@@ -168,8 +210,8 @@ const BookingScreen = React.memo(function BookingScreen() {
                   </div>
 
                   <div className="mb-5 bg-light p-4 rounded-3">
-                    <h4 className="text-dark border-bottom pb-3 mb-4">Summary</h4>
-                    <p className="d-flex justify-content-between"><span>Total Stay:</span> <span>{totalDays} Days</span></p>
+                    <h4 className="text-dark border-bottom pb-3 mb-4">Payment Summary</h4>
+                    <p className="d-flex justify-content-between"><span>Total Stay:</span> <span>{totalDays} Day{totalDays > 1 ? 's' : ''}</span></p>
                     <p className="d-flex justify-content-between"><span>Rent per Night:</span> <span>₹{room.rentperday}</span></p>
                     <hr />
                     <div className="d-flex justify-content-between align-items-center">
@@ -179,13 +221,27 @@ const BookingScreen = React.memo(function BookingScreen() {
                   </div>
 
                   <div className="mt-auto">
-                    <button 
-                      className="btn btn-dark btn-lg w-100 py-3 fw-bold shadow-sm" 
-                      onClick={showPaymentModal}
-                      disabled={bookingLoading || bookingSuccess}
-                    >
-                      {bookingLoading ? "Processing..." : `Pay & Confirm Booking`}
-                    </button>
+                    {bookingSuccess ? (
+                      <div className="alert alert-success text-center mb-0 py-3">
+                        <i className="fa fa-check-circle me-2"></i>
+                        <strong>Booking Confirmed!</strong>
+                        <button className="btn btn-dark mt-2 d-block w-100" onClick={() => navigate('/home')}>
+                          Back to Home
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        className="btn btn-dark btn-lg w-100 py-3 fw-bold shadow-sm" 
+                        onClick={showPaymentModal}
+                        disabled={bookingLoading}
+                      >
+                        {bookingLoading ? (
+                          <><span className="spinner-border spinner-border-sm me-2"></span> Processing...</>
+                        ) : (
+                          `Pay ₹${totalAmount} & Confirm Booking`
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -197,23 +253,24 @@ const BookingScreen = React.memo(function BookingScreen() {
       {/* Payment Modal */}
       <Modal
         title={<h4 className="m-0"><i className="fa fa-credit-card me-2"></i> Secure Payment</h4>}
-        open={isPaymentModalVisible}
+        open={isPaymentModalVisible && !bookingLoading && !bookingSuccess}
         onOk={bookRoom}
         onCancel={handlePaymentCancel}
         okText={`Pay ₹${totalAmount}`}
         cancelText="Cancel"
         okButtonProps={{ 
           className: "btn-dark", 
-          disabled: !isPaymentReady,
+          disabled: !isPaymentReady || bookingLoading,
           size: "large"
         }}
         cancelButtonProps={{ size: "large" }}
         width={500}
         centered
+        destroyOnClose
       >
         <div className="py-3">
           <div className="mb-4 p-3 bg-light rounded-3 text-center">
-            <p className="text-muted mb-1">Paying to SHEYROOMS</p>
+            <p className="text-muted mb-1">Paying to STAYVERSE</p>
             <h3 className="fw-bold">₹{totalAmount}</h3>
           </div>
 
@@ -224,6 +281,7 @@ const BookingScreen = React.memo(function BookingScreen() {
               size="large" 
               value={cardName} 
               onChange={(e) => setCardName(e.target.value)} 
+              autoComplete="cc-name"
             />
           </div>
 
@@ -234,6 +292,8 @@ const BookingScreen = React.memo(function BookingScreen() {
               size="large" 
               value={cardNumber} 
               onChange={(e) => setCardNumber(e.target.value)} 
+              maxLength={19}
+              autoComplete="cc-number"
             />
           </div>
 
@@ -246,6 +306,8 @@ const BookingScreen = React.memo(function BookingScreen() {
                   size="large" 
                   value={expiry} 
                   onChange={(e) => setExpiry(e.target.value)} 
+                  maxLength={5}
+                  autoComplete="cc-exp"
                 />
               </div>
             </Col>
@@ -258,6 +320,8 @@ const BookingScreen = React.memo(function BookingScreen() {
                   size="large" 
                   value={cvv} 
                   onChange={(e) => setCvv(e.target.value)} 
+                  maxLength={4}
+                  autoComplete="cc-csc"
                 />
               </div>
             </Col>

@@ -54,34 +54,46 @@ function Registerscreen() {
   }
 
   return (
-    <div>
+    <div className="page-screen">
       {loading && <Loader />}
-      {error && <Error message={error} />}
-      {success && <Success message={success} />}
-
-      <div className='row justify-content-center mt-5'>
-        <div className='col-md-5'>
-          <div className='bs border'>
-            <h1 className='text-center'>Register</h1>
-
-            <input type='text' className='form-control' placeholder='Name'
-              value={name} onChange={(e) => setname(e.target.value)} />
-
-            <input type='email' className='form-control' placeholder='Email'
-              value={email} onChange={(e) => setemail(e.target.value)} />
-
-            <input type='password' className='form-control' placeholder='Password'
-              value={password} onChange={(e) => setpassword(e.target.value)} />
-
-            <input type='password' className='form-control' placeholder='Confirm Password'
-              value={cpassword} onChange={(e) => setcpassword(e.target.value)} />
-
-            <button className='btn btn-dark mt-3' onClick={register}>
-              Register
-            </button>
+      <section className="page-hero text-center">
+        <div className="container">
+          <h1 className="display-5 fw-bold mb-2">Join <span className="accent">StayVerse</span></h1>
+          <p className="lead">Create an account to book rooms and list your property</p>
+        </div>
+      </section>
+      <section className="page-content">
+        <div className="container">
+          {error && <Error message={error} />}
+          {success && <Success message={success} />}
+          <div className="row justify-content-center">
+            <div className="col-md-5">
+              <div className="glass-card-static">
+                <h3 className="text-center mb-4">Register</h3>
+                <div className="mb-3">
+                  <input type="text" className="form-control" placeholder="Name"
+                    value={name} onChange={(e) => setname(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <input type="email" className="form-control" placeholder="Email"
+                    value={email} onChange={(e) => setemail(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <input type="password" className="form-control" placeholder="Password"
+                    value={password} onChange={(e) => setpassword(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <input type="password" className="form-control" placeholder="Confirm Password"
+                    value={cpassword} onChange={(e) => setcpassword(e.target.value)} />
+                </div>
+                <button className="btn btn-dark w-100" onClick={register}>
+                  <i className="fa fa-user-plus me-2"></i> Register
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

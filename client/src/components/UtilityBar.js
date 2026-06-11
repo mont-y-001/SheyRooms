@@ -6,10 +6,10 @@ export default function UtilityBar() {
       <div className="container d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center">
           <span className="me-4 small d-none d-md-inline">
-            <i className="fa fa-phone me-2"></i> +1 800 SHEY ROOMS
+            <i className="fa fa-phone me-2"></i> +1 800 STAYVERSE
           </span>
           <span className="small d-none d-md-inline">
-            <i className="fa fa-envelope me-2"></i> support@sheyrooms.com
+            <i className="fa fa-envelope me-2"></i> support@stayverse.com
           </span>
         </div>
         <div className="d-flex align-items-center">

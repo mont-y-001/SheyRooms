@@ -22,13 +22,13 @@ const Navbar = React.memo(function Navbar() {
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <i className="fa fa-hotel me-2"></i>
-          SHEYROOMS
+          STAYVERSE
         </Link>
         <button 
           className="navbar-toggler" 
           type="button" 
-          data-bs-toggle="collapse" 
-          data-bs-target="#navbarNav" 
+          data-toggle="collapse" 
+          data-target="#navbarNav" 
           aria-controls="navbarNav" 
           aria-expanded="false" 
           aria-label="Toggle navigation"
@@ -70,7 +70,7 @@ const Navbar = React.memo(function Navbar() {
                     className="btn btn-outline-light dropdown-toggle d-flex align-items-center" 
                     type='button' 
                     id='userDropdown' 
-                    data-bs-toggle="dropdown" 
+                    data-toggle="dropdown" 
                     aria-expanded="false"
                   >
                     <i className="fa fa-user-circle me-2"></i>

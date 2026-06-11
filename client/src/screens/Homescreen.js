@@ -88,13 +88,23 @@ const Homescreen = React.memo(function Homescreen() {
         },
       }}
     >
-      <div className="container">
-        <div className="row mt-5">
-          <div className="col-md-3">
-            <RangePicker format="DD-MM-YYYY" onChange={filterByDate} />
+      <div className="page-screen">
+        <section className="page-hero py-4">
+          <div className="container">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+              <div>
+                <h1 className="h2 fw-bold mb-1">Find Your <span className="accent">Perfect Stay</span></h1>
+                <p className="lead mb-0 small">Browse premium rooms and book your next adventure</p>
+              </div>
+              <div>
+                <RangePicker format="DD-MM-YYYY" onChange={filterByDate} />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="row justify-content-center mt-5">
+        </section>
+        <section className="page-content pt-4">
+        <div className="container">
+        <div className="row justify-content-center">
           {loading ? (
             <Loader />
           ) : error ? (
@@ -119,6 +129,8 @@ const Homescreen = React.memo(function Homescreen() {
             </div>
           </div>
         )}
+        </div>
+        </section>
       </div>
     </ConfigProvider>
   );

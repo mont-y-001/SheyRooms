@@ -1,6 +1,6 @@
 import './App.css';
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import UtilityBar from './components/UtilityBar';
@@ -14,6 +14,9 @@ const Registerscreen = lazy(() => import('./screens/Registerscreen'));
 const Loginscreen = lazy(() => import('./screens/Loginscreen'));
 const AboutScreen = lazy(() => import('./screens/AboutScreen'));
 const OwnerLoginScreen = lazy(() => import('./screens/OwnerLoginScreen'));
+const BookingsScreen = lazy(() => import('./screens/BookingsScreen'));
+const ListPropertyScreen = lazy(() => import('./screens/ListPropertyScreen'));
+const AdminDashboardScreen = lazy(() => import('./screens/AdminDashboardScreen'));
 
 function Layout() {
   const location = useLocation();
@@ -33,6 +36,18 @@ function Layout() {
           <Route path="/login" element={<Loginscreen />} />
           <Route path="/about" element={<AboutScreen />} />
           <Route path="/owner-login" element={<OwnerLoginScreen />} />
+          <Route path="/bookings" element={<BookingsScreen />} />
+          <Route path="/list-property" element={<ListPropertyScreen />} />
+          <Route path="/admin" element={<AdminDashboardScreen />} />
+          <Route path="*" element={
+            <div className="page-screen">
+              <div className="container py-5 text-center">
+                <h2>Page Not Found</h2>
+                <p className="text-muted">The page you're looking for doesn't exist.</p>
+                <Link to="/home" className="btn btn-dark">Go Home</Link>
+              </div>
+            </div>
+          } />
         </Routes>
       </Suspense>
     </>
