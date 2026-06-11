@@ -1,20 +1,21 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
-export default function Navbar() {
+const Navbar = React.memo(function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const user = React.useMemo(() => JSON.parse(localStorage.getItem("currentUser")), []);
-
-  const logOut = async () => {
+  const logOut = React.useCallback(async () => {
     try {
       await supabase.auth.signOut();
-      localStorage.removeItem("currentUser");
-      window.location.href = "/login"
+      logout();
+      navigate('/login');
     } catch (error) {
       console.error("Error signing out:", error);
     }
-  }
+  }, [logout, navigate]);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -107,5 +108,7 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
-}
+  );
+});
+
+export default Navbar;

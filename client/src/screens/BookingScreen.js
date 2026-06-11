@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import moment from "moment";
-import { supabase } from "../supabaseClient";
-import Loader from "../components/Loader";
-import Error from "../components/Error";
-import Success from "../components/Success";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import moment from 'moment';
+import { supabase } from '../supabaseClient';
+import Loader from '../components/Loader';
+import Error from '../components/Error';
 import { Modal, Input, Row, Col } from 'antd';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
-const BookingScreen = () => {
+const BookingScreen = React.memo(function BookingScreen() {
   const { roomid, fromdate, todate } = useParams();
   const navigate = useNavigate();
 
@@ -19,14 +20,20 @@ const BookingScreen = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
-  
+
   // Payment States
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
-  const user = React.useMemo(() => JSON.parse(localStorage.getItem("currentUser")), []);
+  const user = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -66,17 +73,17 @@ const BookingScreen = () => {
     };
 
     fetchRoom();
-  }, [roomid, fromdate, todate, navigate]);
+  }, [roomid, fromdate, todate, navigate, user]);
 
-  const showPaymentModal = () => {
+  const showPaymentModal = useCallback(() => {
     setIsPaymentModalVisible(true);
-  };
+  }, []);
 
-  const handlePaymentCancel = () => {
+  const handlePaymentCancel = useCallback(() => {
     setIsPaymentModalVisible(false);
-  };
+  }, []);
 
-  async function bookRoom() {
+  const bookRoom = useCallback(async () => {
     const bookingDetails = {
       room_id: roomid,
       user_id: user.id,
@@ -89,7 +96,7 @@ const BookingScreen = () => {
     try {
       setBookingLoading(true);
       setIsPaymentModalVisible(false);
-      
+
       const { error } = await supabase
         .from('bookings')
         .insert([bookingDetails]);
@@ -97,12 +104,12 @@ const BookingScreen = () => {
       if (error) throw error;
 
       setBookingSuccess(true);
-      
+
       Modal.success({
         title: 'Booking Confirmed!',
         content: (
           <div>
-            <p>Your room at <strong>{room.name}</strong> has been booked successfully.</p>
+            <p>Your room at <strong>{room?.name}</strong> has been booked successfully.</p>
             <p>Dates: <strong>{fromdate}</strong> to <strong>{todate}</strong></p>
             <p>We've sent a confirmation email to your registered address.</p>
           </div>
@@ -120,7 +127,9 @@ const BookingScreen = () => {
     } finally {
       setBookingLoading(false);
     }
-  }
+  }, [roomid, fromdate, todate, totalAmount, totalDays, user, room?.name, navigate]);
+
+  const isPaymentReady = cardName && cardNumber && expiry && cvv;
 
   return (
     <div className="container py-5">
@@ -135,11 +144,14 @@ const BookingScreen = () => {
               <div className="row">
                 <div className="col-md-7 border-end pe-md-5">
                   <h2 className="mb-4">{room.name}</h2>
-                  <img
+                  <LazyLoadImage
                     className="img-fluid rounded shadow-lg mb-4"
                     alt={room.name}
                     src={room.imageurls?.[0] || "https://via.placeholder.com/600"}
-                    style={{ height: "400px", width: "100%", objectFit: "cover" }}
+                    effect="blur"
+                    width="100%"
+                    height={400}
+                    style={{ objectFit: "cover" }}
                   />
                   <p className="text-muted lead">{room.description}</p>
                 </div>
@@ -192,7 +204,7 @@ const BookingScreen = () => {
         cancelText="Cancel"
         okButtonProps={{ 
           className: "btn-dark", 
-          disabled: !cardName || !cardNumber || !expiry || !cvv,
+          disabled: !isPaymentReady,
           size: "large"
         }}
         cancelButtonProps={{ size: "large" }}
@@ -204,7 +216,7 @@ const BookingScreen = () => {
             <p className="text-muted mb-1">Paying to SHEYROOMS</p>
             <h3 className="fw-bold">₹{totalAmount}</h3>
           </div>
-          
+
           <div className="mb-3">
             <label className="form-label small fw-bold">CARDHOLDER NAME</label>
             <Input 
@@ -214,7 +226,7 @@ const BookingScreen = () => {
               onChange={(e) => setCardName(e.target.value)} 
             />
           </div>
-          
+
           <div className="mb-3">
             <label className="form-label small fw-bold">CARD NUMBER</label>
             <Input 
@@ -224,7 +236,7 @@ const BookingScreen = () => {
               onChange={(e) => setCardNumber(e.target.value)} 
             />
           </div>
-          
+
           <Row gutter={16}>
             <Col span={14}>
               <div className="mb-3">
@@ -250,7 +262,7 @@ const BookingScreen = () => {
               </div>
             </Col>
           </Row>
-          
+
           <div className="mt-2 text-center">
             <img src="https://help.zazzle.com/hc/article_attachments/360010513393/Logos-01.png" alt="cards" style={{ height: "30px", opacity: 0.7 }} />
           </div>
@@ -258,6 +270,6 @@ const BookingScreen = () => {
       </Modal>
     </div>
   );
-};
+});
 
 export default BookingScreen;
